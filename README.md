@@ -28,7 +28,7 @@
   
 ###   Execution Flow
 
-  1. Python RPC UI: enter auto mode (F5)
+  1. Python RPC UI: enter auto mode (F4)
    - Mbed send UART to trigger blob detection
    - Mbed receive blob color code
    - if green light received -> Next step
