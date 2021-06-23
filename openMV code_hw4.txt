@@ -1,0 +1,82 @@
+import sensor, image, time, math, pyb
+
+
+sensor.reset()
+sensor.set_pixformat(sensor.RGB565)
+sensor.set_framesize(sensor.QQVGA) # we run out of memory if the resolution is much bigger...
+sensor.skip_frames(time = 2000)
+sensor.set_auto_gain(False)  # must turn this off to prevent image washout...
+sensor.set_auto_whitebal(False)  # must turn this off to prevent image washout...
+sensor.set_vflip(True)
+sensor.set_hmirror(True)
+
+
+clock = time.clock()
+
+
+f_x = (2.8 / 3.984) * 160 # find_apriltags defaults to this if not set
+
+f_y = (2.8 / 2.952) * 120 # find_apriltags defaults to this if not set
+
+c_x = 160 * 0.5 # find_apriltags defaults to this if not set (the image.w * 0.5)
+
+c_y = 120 * 0.5 # find_apriltags defaults to this if not set (the image.h * 0.5)
+pyb.LED(2).on()
+pyb.LED(3).on()
+
+def degrees(radians):
+
+   return (180 * radians) / math.pi
+
+uart = pyb.UART(3,9600,timeout_char=1000)
+uart.init(9600,bits=8,parity = None, stop=1, timeout_char=1000)
+RED_LED_PIN = 1
+ret = 48
+
+
+def track_tag():
+    print("Enter Tag")
+    for tag in img.find_apriltags(fx=f_x, fy=f_y, cx=c_x, cy=c_y): # defaults to TAG36H11
+        deg = int(degrees(tag.z_rotation()))
+        #print(degrees(tag.x_rotation()), degrees(tag.y_rotation()), degrees(tag.z_rotation()))
+        #array = [(deg>>(8*i))&0xff for i in range(1,-1,-1)]
+        print(deg)
+        #for d in array:
+            #uart.write(chr(d))
+        uart.write(chr(deg))
+        uart.write("\n")
+        #time.sleep_ms(400)
+
+def track_line():
+    print("Enter line")
+    for l in img.find_line_segments(merge_distance = 0, max_theta_diff = 5):
+        if l.y2() > 110:
+        #if l.y2() == 0:
+            img.draw_line(l.line(), color = (255, 0, 0), thickness=5)
+            # print("%d, %d, %d, %d" % l.line())
+            print("{}, {}, {}, {}".format(l.x1(), l.x2(), l.y1(), l.y2()))
+            rho = l.rho() + 160
+            # print(l.rho(), l.theta())
+            #print("----------------")
+            uart.write(chr(rho))
+            uart.write("\n")
+            break
+
+
+
+pyb.LED(RED_LED_PIN).on()
+sensor.skip_frames(time = 1000) # Give the user time to get ready.
+pyb.LED(RED_LED_PIN).off()
+pyb.LED(RED_LED_PIN).on()
+while(True):
+
+    clock.tick()
+    img = sensor.snapshot()
+    if uart.any():
+        ret = uart.readchar()
+        print(ret)
+    if ret==48:
+        track_tag()
+
+    elif ret==49:
+        track_line()
