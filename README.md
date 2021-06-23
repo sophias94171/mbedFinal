@@ -52,4 +52,8 @@
 
 3. demo video:
     https://drive.google.com/file/d/1cKarCdNoDI-se3LtDhSXPAxc65iFe4K1/view?usp=sharing
+
+4. Screen Result
+![screen](https://user-images.githubusercontent.com/79574056/123070722-948d0080-d446-11eb-9186-29fb6cf504b2.png)
+
     
